@@ -10,9 +10,9 @@ export default function CanvasWrapper({
 
     return (
         <TransformWrapper
-            initialScale={6}
+            initialScale={6.5}
             minScale={1}
-            maxScale={10}
+            maxScale={40}
             doubleClick={{ disabled: true }}
             centerZoomedOut={false}
             centerOnInit={true}

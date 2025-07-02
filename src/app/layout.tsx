@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Inter, Inter_Tight } from "next/font/google";
+import { Inter, Inter_Tight, Tiny5 } from "next/font/google";
 import "./globals.css";
 
 const inter = Inter({
@@ -11,6 +11,8 @@ const interTight = Inter_Tight({
     variable: "--font-inter-tight",
     subsets: ["latin"],
 });
+
+const jersey10 = Tiny5({ variable: "--font-jersey-10", weight: "400" });
 
 export const metadata: Metadata = {
     title: "hackaplace",
@@ -25,7 +27,7 @@ export default function RootLayout({
     return (
         <html lang="en">
             <body
-                className={`${inter.variable} ${interTight.variable} antialiased`}
+                className={`${inter.variable} ${interTight.variable} ${jersey10.variable} antialiased`}
             >
                 {children}
             </body>

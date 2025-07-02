@@ -10,6 +10,7 @@
     --color-foreground: var(--foreground);
     --font-body: var(--font-inter);
     --font-display: var(--font-inter-tight);
+    --font-heading: var(--font-jersey-10);
 }
 
 @media (prefers-color-scheme: dark) {
