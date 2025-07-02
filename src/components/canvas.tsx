@@ -1,7 +1,7 @@
 "use client";
 import useColorStore from "@/stores/color";
 import { useEffect, useRef } from "react";
-import supabase from "@/lib/supabase";
+import supabase from "@/utils/supabase";
 
 export default function Canvas() {
     const canvasRef = useRef<HTMLCanvasElement | null>(null);
