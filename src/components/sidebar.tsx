@@ -15,24 +15,23 @@ export default function Sidebar() {
         if (user) {
             (async () => {
                 const { data, error } = await supabase.auth.getUserIdentities();
-
                 if (!error) {
                     const identityData = data.identities[0].identity_data;
                     setIdentity(identityData);
                 }
             })();
+        } else {
+            setOpened(true);
         }
-
-        setOpened(true);
     }, [user]);
 
     return (
         <div
-            className={`fixed h-[100dvh] p-4 shrink-0 z-20 flex duration-300 hover:duration-200 hover:translate-x-1.5 ${
+            className={`fixed h-[100dvh] p-4 z-20 flex duration-300 hover:duration-200 hover:translate-x-1.5 ${
                 opened ? "translate-x-0" : "-translate-x-full"
             }`}
         >
-            <div className="w-72 bg-[#17171d] p-6 border-2 border-white/25 h-full rounded-xl flex flex-col justify-between">
+            <div className="w-80 bg-[#17171d] p-6 border-2 border-white/25 h-full rounded-xl flex flex-col justify-between">
                 <div className="grid gap-3">
                     <span className="text-3xl font-display font-bold">
                         hackaplace
@@ -51,7 +50,7 @@ export default function Sidebar() {
                             src={identity.picture}
                         />
 
-                        <div className="flex flex-col gap-0">
+                        <div className="flex flex-col gap-1">
                             <span className="font-semibold">
                                 {identity.full_name}
                             </span>

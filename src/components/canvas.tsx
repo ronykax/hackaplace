@@ -1,70 +1,64 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import supabase from "@/utils/supabase";
-import blobToBase64 from "@/utils/blob-to-base64";
+import useUserStore from "@/stores/user";
+import usePlacedStore from "@/stores/placed";
+import useBlobStore from "@/stores/blob";
+import getCanvas from "@/utils/get-canvas";
 
 export default function Canvas() {
     const canvasRef = useRef<HTMLCanvasElement | null>(null);
+
+    const { user } = useUserStore();
+    const { placed, setPlaced } = usePlacedStore();
+    const { setBlob } = useBlobStore();
+
     const [latestImage, setLatestImage] = useState<string | null>(null);
 
+    // only get the canvas image if the user is logged in
     useEffect(() => {
-        (async () => {
-            const { data, error } = await supabase
-                .from("canvases")
-                .select("*")
-                .eq("id", 1)
-                .single();
-
-            if (error) return console.error(error);
-
-            const base64 = data.canvas;
-            const blob = new Blob(
-                [Uint8Array.from(atob(base64), (c) => c.charCodeAt(0))],
-                {
-                    type: "image/png",
-                }
-            );
-
-            const url = URL.createObjectURL(blob);
-            setLatestImage(url);
-        })();
-    }, []);
+        if (user) {
+            (async () => {
+                const url = await getCanvas();
+                setLatestImage(url);
+            })();
+        } else {
+            setLatestImage("/notloggedin.png");
+        }
+    }, [user]);
 
     useEffect(() => {
-        const canvas = canvasRef.current;
-        if (!canvas) return;
-
-        const ctx = canvas.getContext("2d");
-        if (!ctx) return;
-
-        canvas.style.width = "100%";
-        canvas.style.imageRendering = "pixelated";
+        const canvas = canvasRef.current!;
+        const ctx = canvas.getContext("2d")!;
 
         const img = new Image();
-
         img.crossOrigin = "anonymous";
-        img.src = latestImage ? latestImage : "/space.png";
+        img.src = latestImage ?? "/space.png";
         img.onload = () => ctx.drawImage(img, 0, 0);
+    }, [latestImage]);
+
+    // remove `user` from dependency list and `if (!user) return;` if theress an error
+    useEffect(() => {
+        const canvas = canvasRef.current!;
+        const ctx = canvas.getContext("2d")!;
 
         const handleClick = async (e: MouseEvent) => {
+            if (!user) return;
+            console.log(user.email);
+
+            // don't work if a pixel has been already placed
+            if (placed) return;
+
             const blob = await drawPixel({ canvas, ctx, e });
             if (!blob) return;
 
-            // const buffer = await blob.arrayBuffer();
-            const base64 = await blobToBase64(blob);
-
-            const { error } = await supabase
-                .from("canvases")
-                .update({ canvas: base64 })
-                .eq("id", 1);
-
-            if (error) console.error("update failed: ", error);
+            setBlob(blob);
+            setPlaced(true);
         };
 
         canvas.addEventListener("click", handleClick);
         return () => canvas.removeEventListener("click", handleClick);
-    }, [latestImage]);
+    }, [user, placed]);
 
     function drawPixel({
         canvas,
@@ -96,6 +90,10 @@ export default function Canvas() {
             width={128}
             height={128}
             className="cursor-crosshair"
+            style={{
+                cursor: placed ? "not-allowed" : "crosshair",
+                imageRendering: "pixelated",
+            }}
         ></canvas>
     );
 }

@@ -1,17 +1,15 @@
 "use client";
 
-import Canvas from "@/components/canvas";
 import CanvasWrapper from "@/components/canvas-wrapper";
-import Orpheus from "@/components/orpheus";
+import Canvas from "@/components/canvas";
 import Sidebar from "@/components/sidebar";
-import usePlacedStore from "@/stores/placed";
-import useUserStore from "@/stores/user";
+import Orpheus from "@/components/orpheus";
 import supabase from "@/utils/supabase";
+import useUserStore from "@/stores/user";
 import { useEffect } from "react";
 
 export default function Home() {
     const { setUser } = useUserStore();
-    const { placed, setPlaced } = usePlacedStore();
 
     useEffect(() => {
         (async () => {
@@ -19,12 +17,6 @@ export default function Home() {
             if (!error) setUser(data.user);
         })();
     }, []);
-
-    // logs
-    useEffect(() => {
-        console.log("placed: ", placed);
-        // console.log("blob updated");
-    }, [placed]);
 
     return (
         <>
