@@ -7,35 +7,39 @@ import useBlobStore from "@/stores/blob";
 import getCanvas from "@/utils/get-canvas";
 
 export default function Canvas() {
+    const size = 1000;
     const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
     const { user } = useUserStore();
     const { placed, setPlaced } = usePlacedStore();
     const { setBlob } = useBlobStore();
 
-    const [latestImage, setLatestImage] = useState<string | null>(null);
+    const [latestImage, setLatestImage] = useState<string>(
+        "/space1000x1000.png"
+    );
 
     // only get the canvas image if the user is logged in
     useEffect(() => {
         if (user) {
             (async () => {
                 const url = await getCanvas();
-                setLatestImage(url);
+                if (url) setLatestImage(url);
             })();
-        } else {
-            setLatestImage("/notloggedin.png");
         }
-    }, [user]);
+    }, [user]); // !!! add user
 
     useEffect(() => {
         const canvas = canvasRef.current!;
         const ctx = canvas.getContext("2d")!;
 
+        // ctx.fillStyle = "white";
+        // ctx.fillRect(0, 0, canvas.width, canvas.height);
+
         const img = new Image();
         img.crossOrigin = "anonymous";
-        img.src = latestImage ?? "/space.png";
+        img.src = latestImage;
         img.onload = () => ctx.drawImage(img, 0, 0);
-    }, [latestImage]);
+    }, [latestImage]); // !!! add latestImage
 
     // remove `user` from dependency list and `if (!user) return;` if theress an error
     useEffect(() => {
@@ -87,8 +91,8 @@ export default function Canvas() {
     return (
         <canvas
             ref={canvasRef}
-            width={128}
-            height={128}
+            width={size}
+            height={size}
             className="cursor-crosshair"
             style={{
                 cursor: placed ? "not-allowed" : "crosshair",

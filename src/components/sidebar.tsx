@@ -38,8 +38,7 @@ export default function Sidebar() {
                     </span>
 
                     <span className="text-sm opacity-75 leading-relaxed">
-                        The canvas is empty and every hackclubber gets to draw
-                        one pixel every 5-10 minutes!
+                        1000x1000 open canvas for Hack Clubbers!
                     </span>
                 </div>
 

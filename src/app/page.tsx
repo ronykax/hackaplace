@@ -28,7 +28,7 @@ export default function Home() {
                     </CanvasWrapper>
                 </div>
 
-                <span className="text-sm fixed bottom-6 left-1/2 text-center font-medium opacity-50 -translate-x-1/2">
+                <span className="text-sm fixed bottom-6 left-1/2 text-center font-medium opacity-75 -translate-x-1/2 [text-shadow:0_0_20px_black]">
                     scroll to zoom and click or pinch to pan
                 </span>
             </div>
