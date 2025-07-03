@@ -43,7 +43,7 @@ export default function Sidebar() {
                     </span>
                 </div>
 
-                {identity && (
+                {identity ? (
                     <div className="flex gap-3 items-centers">
                         <img
                             className="rounded-full w-10 h-10"
@@ -58,6 +58,17 @@ export default function Sidebar() {
                                 {identity.email}
                             </span>
                         </div>
+                    </div>
+                ) : (
+                    <div className="mt-6 flex gap-2">
+                        <button
+                            onClick={() =>
+                                (window.location.href = "/auth/login")
+                            }
+                            className="text-lg px-4 py-2 rounded-md bg-green-600/75 font-semibold duration-150 hover:bg-green-600/100 border-2 cursor-pointer border-white/25 w-full"
+                        >
+                            sign in
+                        </button>
                     </div>
                 )}
             </div>
