@@ -10,7 +10,7 @@ export default function Page() {
                 provider: "slack_oidc",
                 options: {
                     scopes: "openid email profile",
-                    redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/auth/callback`,
+                    redirectTo: `${window.location.origin}/auth/callback`,
                 },
             });
         })();
