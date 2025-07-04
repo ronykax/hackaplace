@@ -11,7 +11,7 @@ export default function CanvasWrapper({
     return (
         <div className="w-screen h-screen">
             <TransformWrapper
-                initialScale={0.75}
+                initialScale={10}
                 minScale={0.75}
                 maxScale={60}
                 doubleClick={{ disabled: true }}
