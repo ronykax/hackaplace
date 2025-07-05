@@ -1,7 +1,10 @@
+import useCanvasDataStore from "@/stores/canvas";
 import useUserStore from "@/stores/user";
 import supabase from "@/utils/supabase";
+import timeAgo from "@/utils/time-ago";
 import { UserIdentity } from "@supabase/supabase-js";
 import { useEffect, useState } from "react";
+import Cooldown from "./cooldown";
 
 export default function Sidebar() {
     const [opened, setOpened] = useState(false);
@@ -11,14 +14,18 @@ export default function Sidebar() {
         UserIdentity["identity_data"] | null
     >(null);
 
+    const { canvasData } = useCanvasDataStore();
+
     useEffect(() => {
         if (user) {
             (async () => {
-                const { data, error } = await supabase.auth.getUserIdentities();
-                if (!error) {
-                    const identityData = data.identities[0].identity_data;
-                    setIdentity(identityData);
-                }
+                await supabase.auth
+                    .getUserIdentities()
+                    .then(({ data, error }) => {
+                        if (error) return;
+                        const identityData = data.identities[0].identity_data;
+                        setIdentity(identityData);
+                    });
             })();
         } else {
             setOpened(true);
@@ -32,31 +39,72 @@ export default function Sidebar() {
             }`}
         >
             <div className="w-80 bg-[#17171d] p-6 border-2 border-white/25 h-full rounded-xl flex flex-col justify-between">
-                <div className="grid gap-3">
+                <div className="grid gap-4">
                     <span className="text-3xl font-display font-bold">
-                        hackaplace
+                        hackaplace 🎨
                     </span>
 
-                    <span className="text-sm opacity-75 leading-relaxed">
-                        1000x1000 open canvas for Hack Clubbers!
-                    </span>
+                    <p className="text-sm opacity-75 leading-relaxed">
+                        An open 1000x1000 canvas for Hack Clubbers! You can
+                        place a single pixel on it every 5 minutes.
+                        {/* <span className="font-medium opacity-50 text-xs">
+                            Last updated by{" "}
+                            <span className="underline font-semibold">
+                                {lastUpdatedByDisplayName}
+                            </span>
+                        </span> */}
+                    </p>
                 </div>
 
                 {identity ? (
-                    <div className="flex gap-3 items-centers">
-                        <img
-                            className="rounded-full w-10 h-10"
-                            src={identity.picture}
-                        />
-
-                        <div className="flex flex-col gap-1">
-                            <span className="font-semibold">
-                                {identity.full_name}
-                            </span>
-                            <span className="opacity-75 text-sm">
-                                {identity.email}
-                            </span>
+                    <div className="flex flex-col gap-4">
+                        <div className="flex flex-col gap-1 font-medium text-xs">
+                            <div className="flex justify-between">
+                                <span className="opacity-75">Cooldown</span>
+                                <span className="font-mono text-green-400 font-bold">
+                                    <Cooldown
+                                        startTime={
+                                            canvasData && canvasData.updated_at
+                                        }
+                                    />
+                                </span>
+                            </div>
+                            <div className="flex justify-between opacity-75">
+                                <span>Last updated by</span>
+                                <span className="font-mono">
+                                    {canvasData &&
+                                        "..." +
+                                            (
+                                                canvasData.updated_by as string
+                                            ).slice(-10)}
+                                </span>
+                            </div>
+                            <div className="flex justify-between opacity-75">
+                                <span>Last updated at</span>
+                                <span className="font-mono">
+                                    {canvasData &&
+                                        timeAgo(canvasData.updated_at)}
+                                </span>
+                            </div>
                         </div>
+                        <span className="text-xs italic opacity-50 font-medium">
+                            ~ {user?.email}
+                        </span>
+                        {/* <div className="flex gap-3 items-centers">
+                            <img
+                                className="rounded-full w-10 h-10"
+                                src={identity.picture}
+                            />
+
+                            <div className="flex flex-col gap-1">
+                                <span className="font-semibold">
+                                    {identity.full_name}
+                                </span>
+                                <span className="opacity-75 text-sm">
+                                    {identity.email}
+                                </span>
+                            </div>
+                        </div> */}
                     </div>
                 ) : (
                     <div className="mt-6 flex gap-2">

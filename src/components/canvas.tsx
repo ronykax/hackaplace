@@ -5,6 +5,8 @@ import useUserStore from "@/stores/user";
 import usePlacedStore from "@/stores/placed";
 import useBlobStore from "@/stores/blob";
 import getCanvas from "@/utils/get-canvas";
+import useCanvasDataStore from "@/stores/canvas";
+import base64ToURL from "@/utils/base64-to-url";
 
 export default function Canvas() {
     const size = 1000;
@@ -13,17 +15,18 @@ export default function Canvas() {
     const { user } = useUserStore();
     const { placed, setPlaced } = usePlacedStore();
     const { setBlob } = useBlobStore();
+    const { canvasData, setCanvasData } = useCanvasDataStore();
 
-    const [latestImage, setLatestImage] = useState<string>(
-        "/space1000x1000.png"
-    );
+    const [latestImage, setLatestImage] = useState<string | null>(null);
 
     // only get the canvas image if the user is logged in
     useEffect(() => {
         if (user) {
             (async () => {
-                const url = await getCanvas();
-                if (url) setLatestImage(url);
+                await getCanvas().then((data) => {
+                    setCanvasData(data);
+                    setLatestImage(base64ToURL(data.canvas));
+                });
             })();
         }
     }, [user]); // !!! add user
@@ -31,14 +34,16 @@ export default function Canvas() {
     useEffect(() => {
         const canvas = canvasRef.current!;
         const ctx = canvas.getContext("2d")!;
+        ctx.imageSmoothingEnabled = false;
 
-        // ctx.fillStyle = "white";
-        // ctx.fillRect(0, 0, canvas.width, canvas.height);
+        if (latestImage) {
+            const img = new Image();
 
-        const img = new Image();
-        img.crossOrigin = "anonymous";
-        img.src = latestImage;
-        img.onload = () => ctx.drawImage(img, 0, 0);
+            img.crossOrigin = "anonymous";
+            img.src = latestImage;
+
+            img.onload = () => ctx.drawImage(img, 0, 0);
+        }
     }, [latestImage]); // !!! add latestImage
 
     // remove `user` from dependency list and `if (!user) return;` if theress an error
@@ -48,10 +53,7 @@ export default function Canvas() {
 
         const handleClick = async (e: MouseEvent) => {
             if (!user) return;
-            console.log(user.email);
-
-            // don't work if a pixel has been already placed
-            if (placed) return;
+            if (placed) return; // don't work if a pixel has been already placed
 
             const blob = await drawPixel({ canvas, ctx, e });
             if (!blob) return;
@@ -97,6 +99,10 @@ export default function Canvas() {
             style={{
                 cursor: placed ? "not-allowed" : "crosshair",
                 imageRendering: "pixelated",
+                backgroundImage: 'url("/space1000x1000.png")',
+                backgroundSize: "cover",
+                backgroundRepeat: "no-repeat",
+                backgroundPosition: "center",
             }}
         ></canvas>
     );

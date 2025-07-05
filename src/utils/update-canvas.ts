@@ -15,7 +15,11 @@ export default async function updateCanvas({
 
     const { error } = await supabase
         .from("canvases")
-        .update({ canvas: base64 })
+        .update({
+            canvas: base64,
+            updated_by: user.id,
+            updated_at: new Date().toISOString(),
+        })
         .eq("id", 1);
 
     if (error) {
