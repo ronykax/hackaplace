@@ -7,6 +7,8 @@ import useBlobStore from "@/stores/blob";
 import getCanvas from "@/utils/get-canvas";
 import useCanvasDataStore from "@/stores/canvas";
 import base64ToURL from "@/utils/base64-to-url";
+import { useCooldownStore } from "@/stores/cooldown";
+import useColorStore from "@/stores/color";
 
 export default function Canvas() {
     const size = 1000;
@@ -16,8 +18,12 @@ export default function Canvas() {
     const { placed, setPlaced } = usePlacedStore();
     const { setBlob } = useBlobStore();
     const { canvasData, setCanvasData } = useCanvasDataStore();
+    const { cooldown } = useCooldownStore();
+    const { color } = useColorStore();
 
     const [latestImage, setLatestImage] = useState<string | null>(null);
+
+    const [uCantDrawLilBro, setUCantDrawLilBro] = useState(true);
 
     // only get the canvas image if the user is logged in
     useEffect(() => {
@@ -51,10 +57,24 @@ export default function Canvas() {
         const canvas = canvasRef.current!;
         const ctx = canvas.getContext("2d")!;
 
-        const handleClick = async (e: MouseEvent) => {
-            if (!user) return;
-            if (placed) return; // don't work if a pixel has been already placed
+        if (!user) {
+            setUCantDrawLilBro(true);
+            return;
+        }
 
+        if (cooldown !== "0:00") {
+            setUCantDrawLilBro(true);
+            return;
+        }
+
+        if (placed) {
+            setUCantDrawLilBro(true);
+            return;
+        }
+
+        setUCantDrawLilBro(false);
+
+        const handleClick = async (e: MouseEvent) => {
             const blob = await drawPixel({ canvas, ctx, e });
             if (!blob) return;
 
@@ -64,7 +84,7 @@ export default function Canvas() {
 
         canvas.addEventListener("click", handleClick);
         return () => canvas.removeEventListener("click", handleClick);
-    }, [user, placed]);
+    }, [user, placed, cooldown, color]);
 
     function drawPixel({
         canvas,
@@ -82,7 +102,7 @@ export default function Canvas() {
         const x = Math.floor((e.clientX - rect.left) * scaleX);
         const y = Math.floor((e.clientY - rect.top) * scaleY);
 
-        ctx.fillStyle = "#000000";
+        ctx.fillStyle = color;
         ctx.fillRect(x, y, 1, 1);
 
         return new Promise((resolve) => {
@@ -97,7 +117,7 @@ export default function Canvas() {
             height={size}
             className="cursor-crosshair"
             style={{
-                cursor: placed ? "not-allowed" : "crosshair",
+                cursor: uCantDrawLilBro ? "not-allowed" : "crosshair",
                 imageRendering: "pixelated",
                 backgroundImage: 'url("/space1000x1000.png")',
                 backgroundSize: "cover",

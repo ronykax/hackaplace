@@ -25,7 +25,7 @@ export default function Orpheus() {
                 placed ? "translate-x-0" : "translate-x-full"
             }`}
         >
-            <div className="rounded-xl overflow-hidden w-80 border-2 border-white/25 p-6 bg-[#17171d]">
+            <div className="rounded-xl overflow-hidden w-80 border-2 border-white/25 p-6 bg-[#17171d] drop-shadow-2xl drop-shadow-black/25">
                 <div className="flex flex-col gap-3">
                     <span className="font-semibold">are you sure?</span>
                     <span className="opacity-75 text-sm leading-relaxed">

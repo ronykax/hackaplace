@@ -4,7 +4,8 @@ import supabase from "@/utils/supabase";
 import timeAgo from "@/utils/time-ago";
 import { UserIdentity } from "@supabase/supabase-js";
 import { useEffect, useState } from "react";
-import Cooldown from "./cooldown";
+import { useCooldownStore } from "@/stores/cooldown";
+import useColorStore from "@/stores/color";
 
 export default function Sidebar() {
     const [opened, setOpened] = useState(false);
@@ -15,6 +16,8 @@ export default function Sidebar() {
     >(null);
 
     const { canvasData } = useCanvasDataStore();
+    const { cooldown, setStartTime } = useCooldownStore();
+    const { color, setColor } = useColorStore();
 
     useEffect(() => {
         if (user) {
@@ -23,6 +26,7 @@ export default function Sidebar() {
                     .getUserIdentities()
                     .then(({ data, error }) => {
                         if (error) return;
+
                         const identityData = data.identities[0].identity_data;
                         setIdentity(identityData);
                     });
@@ -32,13 +36,17 @@ export default function Sidebar() {
         }
     }, [user]);
 
+    useEffect(() => {
+        if (canvasData) setStartTime(canvasData.updated_at);
+    }, [canvasData]);
+
     return (
         <div
             className={`fixed h-[100dvh] p-4 z-20 flex duration-300 hover:duration-200 hover:translate-x-1.5 ${
                 opened ? "translate-x-0" : "-translate-x-full"
             }`}
         >
-            <div className="w-80 bg-[#17171d] p-6 border-2 border-white/25 h-full rounded-xl flex flex-col justify-between">
+            <div className="w-80 bg-[#17171d] p-6 border-2 border-white/25 h-full rounded-xl flex flex-col justify-between drop-shadow-2xl drop-shadow-black/25">
                 <div className="grid gap-4">
                     <span className="text-3xl font-display font-bold">
                         hackaplace 🎨
@@ -47,26 +55,24 @@ export default function Sidebar() {
                     <p className="text-sm opacity-75 leading-relaxed">
                         An open 1000x1000 canvas for Hack Clubbers! You can
                         place a single pixel on it every 5 minutes.
-                        {/* <span className="font-medium opacity-50 text-xs">
-                            Last updated by{" "}
-                            <span className="underline font-semibold">
-                                {lastUpdatedByDisplayName}
-                            </span>
-                        </span> */}
                     </p>
                 </div>
 
                 {identity ? (
-                    <div className="flex flex-col gap-4">
+                    <div className="flex flex-col gap-2">
                         <div className="flex flex-col gap-1 font-medium text-xs">
                             <div className="flex justify-between">
                                 <span className="opacity-75">Cooldown</span>
-                                <span className="font-mono text-green-400 font-bold">
-                                    <Cooldown
-                                        startTime={
-                                            canvasData && canvasData.updated_at
-                                        }
-                                    />
+                                <span className="font-mono font-bold">
+                                    {cooldown === "0:00" ? (
+                                        <span className="text-green-400">
+                                            Ready
+                                        </span>
+                                    ) : (
+                                        <span className="text-red-500">
+                                            {cooldown}
+                                        </span>
+                                    )}
                                 </span>
                             </div>
                             <div className="flex justify-between opacity-75">
@@ -86,25 +92,19 @@ export default function Sidebar() {
                                         timeAgo(canvasData.updated_at)}
                                 </span>
                             </div>
+                            <div className="flex justify-between opacity-75">
+                                <span>Color</span>
+                                <input
+                                    className="inline-block w-12 h-6"
+                                    type="color"
+                                    value={color}
+                                    onChange={(e) => setColor(e.currentTarget.value)}
+                                />
+                            </div>
                         </div>
                         <span className="text-xs italic opacity-50 font-medium">
                             ~ {user?.email}
                         </span>
-                        {/* <div className="flex gap-3 items-centers">
-                            <img
-                                className="rounded-full w-10 h-10"
-                                src={identity.picture}
-                            />
-
-                            <div className="flex flex-col gap-1">
-                                <span className="font-semibold">
-                                    {identity.full_name}
-                                </span>
-                                <span className="opacity-75 text-sm">
-                                    {identity.email}
-                                </span>
-                            </div>
-                        </div> */}
                     </div>
                 ) : (
                     <div className="mt-6 flex gap-2">

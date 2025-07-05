@@ -5,9 +5,19 @@ interface ColorState {
     setColor: (color: string) => void;
 }
 
+const getInitialColor = () => {
+    if (typeof window !== "undefined") {
+        return localStorage.getItem("color") || "#000000";
+    }
+    return "#000000";
+};
+
 const useColorStore = create<ColorState>((set) => ({
-    color: "#000000",
-    setColor: (color) => set({ color: color }),
+    color: getInitialColor(),
+    setColor: (color: string) => {
+        localStorage.setItem("color", color);
+        set({ color });
+    },
 }));
 
 export default useColorStore;
